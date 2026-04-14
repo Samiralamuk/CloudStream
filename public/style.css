@@ -1,0 +1,313 @@
+/* ── Reset and base ────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f0f4f8;
+  color: #1a1a2e;
+}
+
+/* ── Auth pages — Login / Register ────────────────────────────── */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.auth-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-card h1 {
+  font-size: 1.8rem;
+  color: #1a56a8;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Inputs ────────────────────────────────────────────────────── */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+textarea,
+select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #1a56a8;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────── */
+button {
+  background: #1a56a8;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+button:hover { background: #1e40af; }
+
+button.danger    { background: #dc2626; }
+button.danger:hover { background: #b91c1c; }
+
+button.secondary { background: #6b7280; }
+button.secondary:hover { background: #4b5563; }
+
+button.small {
+  width: auto;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.82rem;
+}
+
+a {
+  color: #1a56a8;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+a:hover { text-decoration: underline; }
+
+.msg {
+  font-size: 0.88rem;
+  text-align: center;
+  min-height: 1.2rem;
+}
+.msg.error   { color: #dc2626; }
+.msg.success { color: #16a34a; }
+
+/* ── Gallery page — Toolbar ────────────────────────────────────── */
+.toolbar {
+  background: #1a56a8;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.toolbar h2 {
+  flex: 0 0 auto;
+  font-size: 1.4rem;
+  white-space: nowrap;
+}
+
+.toolbar input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.toolbar input::placeholder { color: rgba(255,255,255,0.7); }
+.toolbar input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.toolbar .btn-upload {
+  width: auto;
+  padding: 0.5rem 1.2rem;
+  background: white;
+  color: #1a56a8;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.toolbar .btn-logout {
+  width: auto;
+  padding: 0.5rem 1rem;
+  background: rgba(255,255,255,0.15);
+  white-space: nowrap;
+}
+
+/* ── Filter tabs ───────────────────────────────────────────────── */
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.filter-tabs button {
+  width: auto;
+  padding: 0.4rem 1.1rem;
+  background: #f1f5f9;
+  color: #374151;
+  border-radius: 20px;
+  font-size: 0.88rem;
+}
+
+.filter-tabs button.active {
+  background: #1a56a8;
+  color: white;
+}
+
+/* ── Media grid ────────────────────────────────────────────────── */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #9ca3af;
+}
+
+.empty-state p { font-size: 1.1rem; margin-top: 0.5rem; }
+
+/* ── Media card ────────────────────────────────────────────────── */
+.media-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.media-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.media-card .thumb {
+  width: 100%;
+  height: 150px;
+  background: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  overflow: hidden;
+}
+
+.media-card .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-card .card-body { padding: 0.85rem; }
+
+.media-card .card-body h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-card .card-body .card-desc {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-card .card-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-bottom: 0.6rem;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* ── Modal overlay ─────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box h3 {
+  font-size: 1.2rem;
+  color: #1a56a8;
+}
+
+/* ── Drop zone ─────────────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-size: 0.95rem;
+}
+
+.drop-zone:hover {
+  border-color: #1a56a8;
+  background: #f0f7ff;
+}
+
+.file-name {
+  font-size: 0.85rem;
+  color: #374151;
+  text-align: center;
+}

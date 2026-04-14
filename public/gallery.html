@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudStream — Gallery</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Toolbar — Wireframe ② ── -->
+  <div class="toolbar">
+    <h2>☁ CloudStream</h2>
+    <input
+      type="text"
+      id="search"
+      placeholder="🔍 Search..."
+      oninput="applyFilters()"
+    />
+    <button class="btn-upload" onclick="openUploadModal()">+ Upload</button>
+    <button class="btn-logout secondary" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- ── Filter tabs ── -->
+  <div class="filter-tabs">
+    <button class="active" onclick="setFilter('all', this)">All</button>
+    <button onclick="setFilter('image', this)">Images</button>
+    <button onclick="setFilter('video', this)">Videos</button>
+    <button onclick="setFilter('audio', this)">Audio</button>
+    <button onclick="setFilter('application', this)">PDFs</button>
+  </div>
+
+  <!-- ── Media grid ── -->
+  <div id="gallery" class="media-grid">
+    <div class="empty-state">
+      <div style="font-size:3rem;">☁</div>
+      <p>Loading your media...</p>
+    </div>
+  </div>
+
+  <!-- ── Upload Modal — Wireframe ③ ── -->
+  <div id="upload-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>📂 Upload Media</h3>
+
+      <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+        📂 Drag & drop or click to browse
+        <input
+          type="file"
+          id="file-input"
+          style="display:none"
+          accept="image/jpeg,image/png,video/mp4,audio/mpeg,application/pdf"
+          onchange="handleFileSelect(this)"
+        />
+      </div>
+      <p id="file-name" class="file-name"></p>
+
+      <input type="text"  id="upload-title"       placeholder="Title" />
+      <textarea           id="upload-description" placeholder="Description (optional)" rows="3"></textarea>
+
+      <button onclick="uploadFile()">Upload</button>
+      <button class="secondary" onclick="closeUploadModal()">Cancel</button>
+
+      <p id="upload-msg" class="msg"></p>
+    </div>
+  </div>
+
+  <!-- ── Edit Modal ── -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>✏️ Edit Media</h3>
+      <input type="hidden" id="edit-id" />
+      <input type="text"   id="edit-title"       placeholder="Title" />
+      <textarea            id="edit-description" placeholder="Description" rows="3"></textarea>
+      <button onclick="saveEdit()">Save Changes</button>
+      <button class="secondary" onclick="closeEditModal()">Cancel</button>
+      <p id="edit-msg" class="msg"></p>
+    </div>
+  </div>
+
+  <script>
+    // ── State ─────────────────────────────────────────────────────
+    let allMedia     = [];
+    let activeFilter = "all";
+
+    // ── On page load ──────────────────────────────────────────────
+    window.onload = async () => {
+      // Check session is still valid before loading gallery
+      const check = await fetch("/api/auth/me");
+      if (!check.ok) {
+        window.location.href = "/";
+        return;
+      }
+      loadGallery();
+    };
+
+    // ── Load all media from API ───────────────────────────────────
+    async function loadGallery() {
+      try {
+        const res = await fetch("/api/media");
+        if (res.status === 401) { window.location.href = "/"; return; }
+        allMedia = await res.json();
+        applyFilters();
+      } catch {
+        document.getElementById("gallery").innerHTML =
+          '<div class="empty-state"><p>Could not load media.</p></div>';
+      }
+    }
+
+    // ── Get icon for media type ───────────────────────────────────
+    function getIcon(mediaType) {
+      if (!mediaType) return "📄";
+      if (mediaType.startsWith("image")) return "🖼";
+      if (mediaType.startsWith("video")) return "🎬";
+      if (mediaType.startsWith("audio")) return "🎵";
+      if (mediaType.includes("pdf"))     return "📄";
+      return "📁";
+    }
+
+    // ── Render gallery cards ──────────────────────────────────────
+    function renderGallery(items) {
+      const grid = document.getElementById("gallery");
+
+      if (items.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div style="font-size:3rem;">📭</div>
+            <p>No media found. Upload something!</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = items.map(item => {
+        const date    = new Date(item.uploadDate).toLocaleDateString();
+        const icon    = getIcon(item.mediaType);
+        const isImage = item.mediaType && item.mediaType.startsWith("image");
+        const thumb   = isImage
+          ? `<img src="${item.blobUrl}" alt="${item.title}" loading="lazy" />`
+          : icon;
+
+        return `
+          <div class="media-card">
+            <div class="thumb">${thumb}</div>
+            <div class="card-body">
+              <h4 title="${item.title}">${item.title || "Untitled"}</h4>
+              <p class="card-desc" title="${item.description}">${item.description || ""}</p>
+              <p class="card-meta">${item.sizeMb} MB &middot; ${date}</p>
+              <div class="card-actions">
+                <button class="small"
+                  onclick="openEditModal('${item.id}', \`${escHtml(item.title)}\`, \`${escHtml(item.description)}\`)">
+                  Edit
+                </button>
+                <button class="small danger" onclick="deleteMedia('${item.id}')">Delete</button>
+                <a href="${item.blobUrl}" target="_blank">
+                  <button class="small secondary">View</button>
+                </a>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    // ── Escape HTML for safe attribute injection ──────────────────
+    function escHtml(str) {
+      return (str || "").replace(/`/g, "\\`").replace(/"/g, "&quot;");
+    }
+
+    // ── Filter and search ─────────────────────────────────────────
+    function setFilter(filter, btn) {
+      activeFilter = filter;
+      document.querySelectorAll(".filter-tabs button")
+              .forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById("search").value.toLowerCase().trim();
+      const filtered = allMedia.filter(item => {
+        const matchFilter =
+          activeFilter === "all" ||
+          (item.mediaType && item.mediaType.startsWith(activeFilter));
+        const matchSearch =
+          !query ||
+          (item.title       && item.title.toLowerCase().includes(query)) ||
+          (item.description && item.description.toLowerCase().includes(query));
+        return matchFilter && matchSearch;
+      });
+      renderGallery(filtered);
+    }
+
+    // ── Upload modal ──────────────────────────────────────────────
+    function openUploadModal() {
+      document.getElementById("upload-modal").classList.add("open");
+    }
+    function closeUploadModal() {
+      document.getElementById("upload-modal").classList.remove("open");
+      document.getElementById("file-input").value       = "";
+      document.getElementById("file-name").textContent  = "";
+      document.getElementById("upload-title").value     = "";
+      document.getElementById("upload-description").value = "";
+      document.getElementById("upload-msg").textContent  = "";
+    }
+
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      if (file) {
+        document.getElementById("file-name").textContent = `Selected: ${file.name}`;
+        // Auto-fill title with filename (without extension) if title is empty
+        const titleInput = document.getElementById("upload-title");
+        if (!titleInput.value) {
+          titleInput.value = file.name.replace(/\.[^/.]+$/, "");
+        }
+      }
+    }
+
+    async function uploadFile() {
+      const file  = document.getElementById("file-input").files[0];
+      const title = document.getElementById("upload-title").value.trim();
+      const desc  = document.getElementById("upload-description").value.trim();
+      const msg   = document.getElementById("upload-msg");
+
+      if (!file) {
+        msg.className = "msg error";
+        msg.textContent = "Please select a file first.";
+        return;
+      }
+
+      const form = new FormData();
+      form.append("file",        file);
+      form.append("title",       title || file.name);
+      form.append("description", desc);
+
+      msg.className = "msg";
+      msg.textContent = "Uploading...";
+
+      try {
+        const res = await fetch("/api/media", { method: "POST", body: form });
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.className = "msg success";
+          msg.textContent = "Uploaded successfully!";
+          setTimeout(() => { closeUploadModal(); loadGallery(); }, 800);
+        } else {
+          msg.className = "msg error";
+          msg.textContent = data.error || "Upload failed.";
+        }
+      } catch {
+        msg.className = "msg error";
+        msg.textContent = "Could not connect to server.";
+      }
+    }
+
+    // ── Edit modal ────────────────────────────────────────────────
+    function openEditModal(id, title, description) {
+      document.getElementById("edit-id").value          = id;
+      document.getElementById("edit-title").value       = title;
+      document.getElementById("edit-description").value = description;
+      document.getElementById("edit-msg").textContent   = "";
+      document.getElementById("edit-modal").classList.add("open");
+    }
+    function closeEditModal() {
+      document.getElementById("edit-modal").classList.remove("open");
+    }
+
+    async function saveEdit() {
+      const id    = document.getElementById("edit-id").value;
+      const title = document.getElementById("edit-title").value.trim();
+      const desc  = document.getElementById("edit-description").value.trim();
+      const msg   = document.getElementById("edit-msg");
+
+      if (!title) {
+        msg.className = "msg error";
+        msg.textContent = "Title cannot be empty.";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/media/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, description: desc }),
+        });
+
+        if (res.ok) {
+          closeEditModal();
+          loadGallery();
+        } else {
+          const data = await res.json();
+          msg.className = "msg error";
+          msg.textContent = data.error || "Update failed.";
+        }
+      } catch {
+        msg.className = "msg error";
+        msg.textContent = "Could not connect to server.";
+      }
+    }
+
+    // ── Delete ────────────────────────────────────────────────────
+    async function deleteMedia(id) {
+      if (!confirm("Are you sure you want to delete this item?")) return;
+      try {
+        const res = await fetch(`/api/media/${id}`, { method: "DELETE" });
+        if (res.ok) loadGallery();
+      } catch {
+        alert("Could not delete item.");
+      }
+    }
+
+    // ── Logout ────────────────────────────────────────────────────
+    async function logout() {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/";
+    }
+  </script>
+</body>
+</html>

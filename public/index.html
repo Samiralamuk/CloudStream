@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudStream — Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <h1>☁ CloudStream</h1>
+
+    <!-- ── Login form ── -->
+    <div id="login-section">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <input type="email"    id="login-email"    placeholder="Email address" />
+        <input type="password" id="login-password" placeholder="Password" />
+        <button onclick="login()">Sign In</button>
+        <a href="#" onclick="toggleForms()">Don't have an account? Register →</a>
+        <p id="login-msg" class="msg"></p>
+      </div>
+    </div>
+
+    <!-- ── Register form (hidden by default) ── -->
+    <div id="register-section" style="display:none;">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <input type="email"    id="reg-email"    placeholder="Email address" />
+        <input type="password" id="reg-password" placeholder="Password (min 6 characters)" />
+        <button onclick="register()">Create Account</button>
+        <a href="#" onclick="toggleForms()">Already have an account? Sign In →</a>
+        <p id="reg-msg" class="msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Toggle between login and register forms ───────────────────
+    function toggleForms() {
+      const loginSection    = document.getElementById("login-section");
+      const registerSection = document.getElementById("register-section");
+      const isLoginVisible  = loginSection.style.display !== "none";
+      loginSection.style.display    = isLoginVisible ? "none"  : "block";
+      registerSection.style.display = isLoginVisible ? "block" : "none";
+    }
+
+    // ── Login ─────────────────────────────────────────────────────
+    async function login() {
+      const email    = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      const msg      = document.getElementById("login-msg");
+
+      msg.className = "msg";
+      msg.textContent = "";
+
+      if (!email || !password) {
+        msg.className = "msg error";
+        msg.textContent = "Please enter your email and password.";
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.className = "msg success";
+          msg.textContent = "Logged in! Redirecting...";
+          setTimeout(() => { window.location.href = "/gallery.html"; }, 600);
+        } else {
+          msg.className = "msg error";
+          msg.textContent = data.error || "Login failed.";
+        }
+      } catch {
+        msg.className = "msg error";
+        msg.textContent = "Could not connect to server.";
+      }
+    }
+
+    // ── Register ──────────────────────────────────────────────────
+    async function register() {
+      const email    = document.getElementById("reg-email").value.trim();
+      const password = document.getElementById("reg-password").value;
+      const msg      = document.getElementById("reg-msg");
+
+      msg.className = "msg";
+      msg.textContent = "";
+
+      if (!email || !password) {
+        msg.className = "msg error";
+        msg.textContent = "Please enter your email and password.";
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          msg.className = "msg success";
+          msg.textContent = "Account created! Please sign in.";
+          setTimeout(toggleForms, 1000);
+        } else {
+          msg.className = "msg error";
+          msg.textContent = data.error || "Registration failed.";
+        }
+      } catch {
+        msg.className = "msg error";
+        msg.textContent = "Could not connect to server.";
+      }
+    }
+
+    // ── Enter key support ─────────────────────────────────────────
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const loginVisible = document.getElementById("login-section").style.display !== "none";
+      if (loginVisible) login();
+      else register();
+    });
+  </script>
+</body>
+</html>
