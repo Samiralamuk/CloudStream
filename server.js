@@ -4,12 +4,13 @@ require("dotenv").config();
 
 // ── Application Insights — must be first ─────────────────────────────────────
 const appInsights = require('applicationinsights');
-appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
+appInsights.setup(process.env.APPINSIGHTS_CONNECTION_STRING || process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
   .setAutoDependencyCorrelation(true)
   .setAutoCollectRequests(true)
   .setAutoCollectPerformance(true)
   .setAutoCollectExceptions(true)
   .setAutoCollectDependencies(true)
+  .setSendLiveMetrics(true)
   .start();
 
 const express = require("express");
