@@ -2,6 +2,16 @@
 // Must be the very first line — everything below may depend on process.env
 require("dotenv").config();
 
+// ── Application Insights — must be first ─────────────────────────────────────
+const appInsights = require('applicationinsights');
+appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY)
+  .setAutoDependencyCorrelation(true)
+  .setAutoCollectRequests(true)
+  .setAutoCollectPerformance(true)
+  .setAutoCollectExceptions(true)
+  .setAutoCollectDependencies(true)
+  .start();
+
 const express = require("express");
 const session = require("express-session");
 const cors = require("cors");

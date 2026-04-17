@@ -235,7 +235,7 @@
       msg.textContent = "Uploading...";
 
       try {
-        const res = await fetch("/api/media", { method: "POST", body: form });
+        const res = await fetch("/api/media/upload", { method: "POST", body: form });
         const data = await res.json();
 
         if (res.ok) {

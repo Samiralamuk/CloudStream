@@ -20,3 +20,5 @@ npm-debug.log*
 
 # VS Code
 .vscode/
+
+*.zip
