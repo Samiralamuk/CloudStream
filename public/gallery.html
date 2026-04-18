@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CloudStream — Gallery</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- ── Toolbar — Wireframe ② ── -->
   <div class="toolbar">
     <h2>☁ CloudStream</h2>
-    <input
-      type="text"
-      id="search"
-      placeholder="🔍 Search..."
-      oninput="applyFilters()"
-    />
+    <input type="text" id="search" placeholder="🔍 Search..." oninput="applyFilters()" />
     <button class="btn-upload" onclick="openUploadModal()">+ Upload</button>
     <button class="btn-logout secondary" onclick="logout()">Logout</button>
   </div>
@@ -45,18 +42,13 @@
 
       <div class="drop-zone" onclick="document.getElementById('file-input').click()">
         📂 Drag & drop or click to browse
-        <input
-          type="file"
-          id="file-input"
-          style="display:none"
-          accept="image/jpeg,image/png,video/mp4,audio/mpeg,application/pdf"
-          onchange="handleFileSelect(this)"
-        />
+        <input type="file" id="file-input" style="display:none"
+          accept="image/jpeg,image/png,video/mp4,audio/mpeg,application/pdf" onchange="handleFileSelect(this)" />
       </div>
       <p id="file-name" class="file-name"></p>
 
-      <input type="text"  id="upload-title"       placeholder="Title" />
-      <textarea           id="upload-description" placeholder="Description (optional)" rows="3"></textarea>
+      <input type="text" id="upload-title" placeholder="Title" />
+      <textarea id="upload-description" placeholder="Description (optional)" rows="3"></textarea>
 
       <button onclick="uploadFile()">Upload</button>
       <button class="secondary" onclick="closeUploadModal()">Cancel</button>
@@ -70,8 +62,8 @@
     <div class="modal-box">
       <h3>✏️ Edit Media</h3>
       <input type="hidden" id="edit-id" />
-      <input type="text"   id="edit-title"       placeholder="Title" />
-      <textarea            id="edit-description" placeholder="Description" rows="3"></textarea>
+      <input type="text" id="edit-title" placeholder="Title" />
+      <textarea id="edit-description" placeholder="Description" rows="3"></textarea>
       <button onclick="saveEdit()">Save Changes</button>
       <button class="secondary" onclick="closeEditModal()">Cancel</button>
       <p id="edit-msg" class="msg"></p>
@@ -80,7 +72,7 @@
 
   <script>
     // ── State ─────────────────────────────────────────────────────
-    let allMedia     = [];
+    let allMedia = [];
     let activeFilter = "all";
 
     // ── On page load ──────────────────────────────────────────────
@@ -108,12 +100,12 @@
     }
 
     // ── Get icon for media type ───────────────────────────────────
-    function getIcon(mediaType) {
-      if (!mediaType) return "📄";
-      if (mediaType.startsWith("image")) return "🖼";
-      if (mediaType.startsWith("video")) return "🎬";
-      if (mediaType.startsWith("audio")) return "🎵";
-      if (mediaType.includes("pdf"))     return "📄";
+    function getIcon(mimeType) {
+      if (!mimeType) return "📄";
+      if (mimeType.startsWith("image")) return "🖼";
+      if (mimeType.startsWith("video")) return "🎬";
+      if (mimeType.startsWith("audio")) return "🎵";
+      if (mimeType.includes("pdf")) return "📄";
       return "📁";
     }
 
@@ -131,10 +123,10 @@
       }
 
       grid.innerHTML = items.map(item => {
-        const date    = new Date(item.uploadDate).toLocaleDateString();
-        const icon    = getIcon(item.mediaType);
-        const isImage = item.mediaType && item.mediaType.startsWith("image");
-        const thumb   = isImage
+        const date = new Date(item.uploadDate).toLocaleDateString();
+        const icon = getIcon(item.mimeType);
+        const isImage = item.mimeType && item.mimeType.startsWith("image");
+        const thumb = isImage
           ? `<img src="${item.blobUrl}" alt="${item.title}" loading="lazy" />`
           : icon;
 
@@ -169,7 +161,7 @@
     function setFilter(filter, btn) {
       activeFilter = filter;
       document.querySelectorAll(".filter-tabs button")
-              .forEach(b => b.classList.remove("active"));
+        .forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       applyFilters();
     }
@@ -179,10 +171,10 @@
       const filtered = allMedia.filter(item => {
         const matchFilter =
           activeFilter === "all" ||
-          (item.mediaType && item.mediaType.startsWith(activeFilter));
+          (item.mimeType && item.mimeType.startsWith(activeFilter));
         const matchSearch =
           !query ||
-          (item.title       && item.title.toLowerCase().includes(query)) ||
+          (item.title && item.title.toLowerCase().includes(query)) ||
           (item.description && item.description.toLowerCase().includes(query));
         return matchFilter && matchSearch;
       });
@@ -195,11 +187,11 @@
     }
     function closeUploadModal() {
       document.getElementById("upload-modal").classList.remove("open");
-      document.getElementById("file-input").value       = "";
-      document.getElementById("file-name").textContent  = "";
-      document.getElementById("upload-title").value     = "";
+      document.getElementById("file-input").value = "";
+      document.getElementById("file-name").textContent = "";
+      document.getElementById("upload-title").value = "";
       document.getElementById("upload-description").value = "";
-      document.getElementById("upload-msg").textContent  = "";
+      document.getElementById("upload-msg").textContent = "";
     }
 
     function handleFileSelect(input) {
@@ -215,10 +207,10 @@
     }
 
     async function uploadFile() {
-      const file  = document.getElementById("file-input").files[0];
+      const file = document.getElementById("file-input").files[0];
       const title = document.getElementById("upload-title").value.trim();
-      const desc  = document.getElementById("upload-description").value.trim();
-      const msg   = document.getElementById("upload-msg");
+      const desc = document.getElementById("upload-description").value.trim();
+      const msg = document.getElementById("upload-msg");
 
       if (!file) {
         msg.className = "msg error";
@@ -227,8 +219,8 @@
       }
 
       const form = new FormData();
-      form.append("file",        file);
-      form.append("title",       title || file.name);
+      form.append("file", file);
+      form.append("title", title || file.name);
       form.append("description", desc);
 
       msg.className = "msg";
@@ -254,10 +246,10 @@
 
     // ── Edit modal ────────────────────────────────────────────────
     function openEditModal(id, title, description) {
-      document.getElementById("edit-id").value          = id;
-      document.getElementById("edit-title").value       = title;
+      document.getElementById("edit-id").value = id;
+      document.getElementById("edit-title").value = title;
       document.getElementById("edit-description").value = description;
-      document.getElementById("edit-msg").textContent   = "";
+      document.getElementById("edit-msg").textContent = "";
       document.getElementById("edit-modal").classList.add("open");
     }
     function closeEditModal() {
@@ -265,10 +257,10 @@
     }
 
     async function saveEdit() {
-      const id    = document.getElementById("edit-id").value;
+      const id = document.getElementById("edit-id").value;
       const title = document.getElementById("edit-title").value.trim();
-      const desc  = document.getElementById("edit-description").value.trim();
-      const msg   = document.getElementById("edit-msg");
+      const desc = document.getElementById("edit-description").value.trim();
+      const msg = document.getElementById("edit-msg");
 
       if (!title) {
         msg.className = "msg error";
@@ -315,4 +307,5 @@
     }
   </script>
 </body>
+
 </html>
